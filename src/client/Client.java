@@ -5,7 +5,7 @@ import java.net.Socket;
 import java.util.Scanner;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-
+import java.lang.Thread;
 
 public class Client {
     private static long clientId = -1L;
@@ -17,6 +17,10 @@ public class Client {
         BufferedReader br = new BufferedReader(new InputStreamReader (System.in));
         CommandHandler ch = new CommandHandler();
         MessageHandler mh = new MessageHandler(MessageHandler.ProtocolType.FIFO);
+        InformationController ic = new InformationController();
+
+        // start ic
+        new Thread(ic).start();
 
         while (true) {
             try {
@@ -61,6 +65,18 @@ public class Client {
 
     public static void setClientId(long id) {
         clientId = id;
+    }
+
+    public static long getClientId() {
+        return clientId;
+    }
+
+    public static Long getCurrentGroupId() {
+        return new Long(currentGroupId);
+    }
+
+    public static void setCurrentGroupId(long newId) {
+        currentGroupId = newId;
     }
 
     private static void clientNotRegistered() {

@@ -1,3 +1,4 @@
+import java.util.Iterator;
 
 public class MessageHandler {
 
@@ -7,6 +8,7 @@ public class MessageHandler {
     }
     
     private ProtocolType protocol;
+    private long nextMessageId = 0L;
 
     public MessageHandler(ProtocolType t) {
         protocol = t;
@@ -14,7 +16,19 @@ public class MessageHandler {
 
     public void sendMessage(String message) {
         if (protocol == ProtocolType.FIFO) {
-            System.out.println("fifo");
+            long clientId = Client.getClientId();
+            long groupId = Client.getCurrentGroupId();
+            long messageId = nextMessageId++;
+
+            FifoMessage msg = new FifoMessage(clientId, groupId, messageId, message);
+
+            Iterator<Member> recipient = 
+                InformationController.getGroupMembers(Client.getCurrentGroupId());
+
+            while (recipient.hasNext()) {
+                Member m = recipient.next();
+                // send message to that recipient
+            }
         }   
         else {
             System.out.println("TotalOrder");
