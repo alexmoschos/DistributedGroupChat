@@ -14,14 +14,14 @@ import java.lang.Thread;
 
 public class Client {
     private static long clientId = -1L;
-    private static long currentGroupId = -1L;
+    private static String currentGroupId = "distrib";
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, Throwable {
-        
+
         /* main loop to read input from the user */
         BufferedReader br = new BufferedReader(new InputStreamReader (System.in));
-        CommandHandler ch = new CommandHandler();
         MessageHandler mh = new FifoMessageHandler();
+        CommandHandler ch = new CommandHandler(mh);
         InformationController ic = new InformationController();
 
         // start message handler
@@ -49,7 +49,7 @@ public class Client {
                 System.out.println(e.toString());
             }
         }
-        
+
         // int port = 3000;
         // String serverAddress = "localhost";
         // Socket sock = new Socket(serverAddress,port);
@@ -76,11 +76,11 @@ public class Client {
         return clientId;
     }
 
-    public static Long getCurrentGroupId() {
-        return new Long(currentGroupId);
+    public static String getCurrentGroupId() {
+        return currentGroupId;
     }
 
-    public static void setCurrentGroupId(long newId) {
+    public static void setCurrentGroupId(String newId) {
         currentGroupId = newId;
     }
 

@@ -2,8 +2,10 @@ package client;
 
 import common.*;
 
+import javax.sound.sampled.Line;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Scanner;
 
@@ -12,8 +14,10 @@ public class CommandHandler {
     private ObjectOutputStream sOutput;
     private ObjectInputStream sInput;
 
-
-    public CommandHandler() {}
+    private MessageHandler mh;
+    public CommandHandler(MessageHandler mh) {
+        this.mh = mh;
+    }
 
     public static void main(String[] args) throws Throwable {
         int port = 3000;
@@ -56,7 +60,7 @@ public class CommandHandler {
 
             if(command.equals("r")) { // register user to tracker.
                 this.beginConnection();
-                sOutput.writeObject(new ControlMessage(ControlMessage.Type.Register, "192.168.1.1,80,alexm",-1));
+                sOutput.writeObject(new ControlMessage(ControlMessage.Type.Register, mh.getLocalAddress().getHostAddress() +"," + String.valueOf(mh.getSocket().getLocalPort()) + ",alexm",-1));
                 RegisterReply r = (RegisterReply) sInput.readObject();
                 sock.close();
                 System.out.println(r.id);
@@ -83,6 +87,17 @@ public class CommandHandler {
                 sOutput.writeObject(new ControlMessage(ControlMessage.Type.JoinGroup,command.substring(2), (int)Client.getClientId()));
                 JoinGroupReply zz = (JoinGroupReply) sInput.readObject();
                 sock.close();
+                String groupId = command.substring(2);
+                Group g = InformationController.getGroup(groupId);
+                if (g == null)
+                    g = new Group(groupId);
+                g.dropMembers();
+                for (UserInfo user : zz.users) {
+                    Member m = new Member(user.id, InetAddress.getByName(user.ip), user.port, user.username);
+                    g.addMember(m);
+                    InformationController.addMember(m);
+                }
+                InformationController.addGroup(g);
                 System.out.println(zz.users);
             }
             else if(command.charAt(0) == 'e'){

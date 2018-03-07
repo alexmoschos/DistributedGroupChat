@@ -12,21 +12,35 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class InformationController {
-    private static HashMap<Long, Group> groups;
+    private static HashMap<String, Group> groups;
     private static HashMap<Long, Member> members;
     
     public InformationController() {
-        groups = new HashMap<Long, Group>();
+        groups = new HashMap<String, Group>();
         members = new HashMap<Long, Member>();
     }
 
-    public static String getGroupName(Long groupId) {
+    public static String getGroupName(String groupId) {
         if (!groups.containsKey(groupId))
             return null;
         return groups.get(groupId).name;
     }
 
-    public static Iterator<Member> getGroupMembers(Long groupId) {
+    public static void addMember(Member m) {
+        if (!members.containsKey(m.getId()))
+            return;
+
+        members.put(m.getId(), m);
+    }
+
+    public static Group getGroup(String groupId) {
+        return groups.get(groupId);
+    }
+    public static void addGroup(Group g) {
+        if (!groups.containsKey(g.name));
+            groups.put(g.name, g);
+    }
+    public static Iterator<Member> getGroupMembers(String groupId) {
         if (!groups.containsKey(groupId))
             return null;
         return groups.get(groupId).members.iterator();
@@ -36,19 +50,19 @@ public class InformationController {
         return members.get(memberId);
     }
 
-    public static PriorityQueue<Message> getGroupMessages(Long groupId) {
+    public static PriorityQueue<Message> getGroupMessages(String groupId) {
         if (!groups.containsKey(groupId)) 
             return null;
         return groups.get(groupId).messages;
     }
 
-    public static void addMessageToGroup(Long groupId, Message m) {
+    public static void addMessageToGroup(String groupId, Message m) {
         if (!groups.containsKey(groupId))
             return;
         groups.get(groupId).messages.add(m);
     }
 
-    public static void setMessageTimer(Long groupId, Message msg, MessageHandler mh) {
+    public static void setMessageTimer(String groupId, Message msg, MessageHandler mh) {
         if (!groups.containsKey(groupId))
             return;
         // if timer already exists return
@@ -61,15 +75,17 @@ public class InformationController {
             public void run() {
                 Member m = InformationController.getMember(msg.getUserId());
                 mh.deliverMessage(groupId);
-                if (m.getExpectedMessageId() < msg.getMessageId())
+                if (m.getExpectedMessageId() < msg.getMessageId()) {
                     m.setExpectedMessageId(msg.getMessageId());
+                    mh.deliverMessage(msg.getGroupId());
+                }
             }
         },1000L);
 
         groups.get(groupId).timers.put(String.valueOf(msg.getUserId()) + "," + String.valueOf(msg.getMessageId()), t);
     }
 
-    public static void cancelMessageTimer(Long groupId, Message msg) {
+    public static void cancelMessageTimer(String groupId, Message msg) {
         if (!groups.containsKey(groupId))
             return;
         

@@ -19,8 +19,11 @@ public class Group {
         messages = new PriorityQueue<>();
     }
 
-    public void addMember(long id, InetAddress ip, int port, String username) {
-        Member m = new Member(id,ip, port, username);
+    public void addMember(Member m) {
         members.add(m);
+    }
+
+    public void dropMembers() {
+        members = new LinkedList<Member>();
     }
 }

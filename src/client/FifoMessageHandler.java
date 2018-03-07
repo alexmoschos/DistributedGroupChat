@@ -16,7 +16,7 @@ public class FifoMessageHandler extends MessageHandler {
     public void sendMessage(String message) {
         
         long clientId = Client.getClientId();
-        long groupId = Client.getCurrentGroupId();
+        String groupId = Client.getCurrentGroupId();
         long messageId = getNextMessageId();
 
         Message msg = new Message(clientId, groupId, messageId, message);
@@ -71,7 +71,7 @@ public class FifoMessageHandler extends MessageHandler {
         deliverMessage(msg.getGroupId());
     }
 
-    public void deliverMessage(Long groupId) {
+    public void deliverMessage(String groupId) {
         // first we obtain the name of Group
         String groupName = InformationController.getGroupName(groupId);
         if (groupName == null) {
@@ -99,6 +99,7 @@ public class FifoMessageHandler extends MessageHandler {
                 // this sender isn't yet known to us
                 // what should we do here?
                 // FIX ME
+                return;
             }
 
             if (m.getMessageId() != sender.getExpectedMessageId())
@@ -109,6 +110,8 @@ public class FifoMessageHandler extends MessageHandler {
                 messages.remove();
                 continue;
             }
+
+            InformationController.cancelMessageTimer(m.getGroupId(), m);
 
             System.out.print("in " + groupName + sender.getUsername() + "says:: ");
             System.out.println(m.getMessage());
