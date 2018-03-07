@@ -16,7 +16,7 @@ public class Client {
     private static long clientId = -1L;
     private static long currentGroupId = -1L;
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException, Throwable {
         
         /* main loop to read input from the user */
         BufferedReader br = new BufferedReader(new InputStreamReader (System.in));
