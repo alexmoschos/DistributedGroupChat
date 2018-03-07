@@ -5,6 +5,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Scanner;
+
+import client.FifoMessageHandler;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.lang.Thread;
@@ -18,11 +21,14 @@ public class Client {
         /* main loop to read input from the user */
         BufferedReader br = new BufferedReader(new InputStreamReader (System.in));
         CommandHandler ch = new CommandHandler();
-        MessageHandler mh = new MessageHandler(MessageHandler.ProtocolType.FIFO);
+        MessageHandler mh = new FifoMessageHandler();
         InformationController ic = new InformationController();
 
         // start ic
         new Thread(ic).start();
+
+        // start message handler
+        new Thread(mh).start();
 
         while (true) {
             try {

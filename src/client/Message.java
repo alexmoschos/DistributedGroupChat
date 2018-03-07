@@ -1,15 +1,16 @@
 package client;
 
 import java.io.Serializable;
+import java.lang.Comparable;
 
-public class FifoMessage implements Serializable {
+public class Message implements Serializable, Comparable<Message> {
     protected static final long serialVersionUID = 10881L;
     private long userId;
     private long groupId;
     private long messageId;
     private String message;
 
-    public FifoMessage(long userId, long groupId, long messageId, String message) {
+    public Message(long userId, long groupId, long messageId, String message) {
         this.userId = userId;
         this.groupId = groupId;
         this.messageId = messageId;
@@ -30,5 +31,13 @@ public class FifoMessage implements Serializable {
 
     public String getMessage() {
         return message;
+    }
+
+    public int compareTo(Message o) {
+        if (this.messageId < o.getMessageId())
+            return -1;
+        if (this.messageId > o.getMessageId())
+            return 1;
+        return 0;
     }
 }
