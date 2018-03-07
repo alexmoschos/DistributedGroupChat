@@ -88,7 +88,7 @@ public class FifoMessageHandler extends MessageHandler {
             return;
         }
 
-        while (true) {
+        while (!messages.isEmpty()) {
             // get top message
             Message m = messages.peek();
             
@@ -99,10 +99,11 @@ public class FifoMessageHandler extends MessageHandler {
                 // this sender isn't yet known to us
                 // what should we do here?
                 // FIX ME
+                messages.remove();
                 return;
             }
 
-            if (m.getMessageId() != sender.getExpectedMessageId())
+            if (m.getMessageId() > sender.getExpectedMessageId())
                 break;
 
             if (m.getMessageId() < sender.getExpectedMessageId()) {
@@ -113,7 +114,7 @@ public class FifoMessageHandler extends MessageHandler {
 
             InformationController.cancelMessageTimer(m.getGroupId(), m);
 
-            System.out.print("in " + groupName + sender.getUsername() + "says:: ");
+            System.out.print("in " + groupName + " " + sender.getUsername() + " says:: ");
             System.out.println(m.getMessage());
 
             //and increase the expectedMessageId

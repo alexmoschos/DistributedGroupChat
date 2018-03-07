@@ -27,7 +27,7 @@ public class InformationController {
     }
 
     public static void addMember(Member m) {
-        if (!members.containsKey(m.getId()))
+        if (members.containsKey(m.getId()))
             return;
 
         members.put(m.getId(), m);
