@@ -5,24 +5,22 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Vector;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Tracker {
     private ServerSocket server;
     private Vector<ClientThread> peers;
     Multimap<String,ClientThread> groups;
-    private int nextId;
+    private final AtomicInteger nextId = new AtomicInteger();
     public int getNextId() {
-        return nextId++;
+        return nextId.getAndIncrement();
     }
 
     public Tracker(int PortNumber){
-        nextId = 0;
+        nextId.set(0);
         peers = new Vector<>();
         groups = Multimaps.synchronizedMultimap(ArrayListMultimap.create());
         try {

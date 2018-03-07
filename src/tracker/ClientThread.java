@@ -1,13 +1,12 @@
 package tracker;
 
-import common.ControlMessage;
-import common.ControlReply;
-import common.ListGroupsReply;
+import common.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class ClientThread extends Thread {
     private Socket socket;
@@ -45,12 +44,14 @@ public class ClientThread extends Thread {
                     port = Integer.parseInt(parts[1]);
                     username = parts[2];
                     id = tracker.getNextId();
+                    RegisterReply r = new RegisterReply();
+                    r.id = id;
+                    sOutput.writeObject(r);
                     break;
                 }
             }
             System.out.println("My new id is " + id.toString());
             // we only enter here when the other guy is registered
-            ControlReply reply;
             String name = "";
             while(true) {
                 ControlMessage c = (ControlMessage) sInput.readObject();
@@ -60,32 +61,39 @@ public class ClientThread extends Thread {
                         break;
                     case ListGroups:
                         ListGroupsReply r = new ListGroupsReply();
-                        for(String n : tracker.groups.keySet()){
-                            r.groups.add(n);
-                        }
+                        r.groups = new ArrayList<>(tracker.groups.keySet());
                         sOutput.writeObject(r);
                         break;
                     case ListMembers:
                         name = c.getInfo();
-//                        if(tracker.groups.contains(name)) {
-//                            reply += name + ":";
-//                            for (ClientThread t : tracker.groups.get(name)) {
-//                                reply += t.username + ",";
-//                            }
-//                            reply += "\n";
-//                        } else {
-//                            reply = "Group doesnt exist\n";
-//                        }
+                        ListMembersReply lmr = new ListMembersReply();
+                        lmr.users = new ArrayList<>();
+                        if(tracker.groups.containsKey(name)) {
+                            for (ClientThread t : tracker.groups.get(name)) {
+                                lmr.users.add(t.username);
+                            }
+
+                        }
+                        sOutput.writeObject(lmr);
                         break;
                     case JoinGroup:
                         name = c.getInfo();
-//                        if(tracker.groups.contains(name)){
-//                            Vector<ClientThread> v = tracker.groups.get(name);
-//                        } else {
-//
-//                        }
+                        JoinGroupReply inf = new JoinGroupReply();
+                        inf.users = new ArrayList<>();
+                        if(tracker.groups.containsKey(name)){
+                            for (ClientThread t : tracker.groups.get(name)) {
+                                inf.users.add(new UserInfo(t.username,t.id,t.ip,t.port));
+                            }
+                        }
+                        //should we send the new guy as part of the group
+                        tracker.groups.put(name,this);
+                        sOutput.writeObject(inf);
                         break;
                     case ExitGroup:
+                        name = c.getInfo();
+                        ControlReply ack = new ControlReply();
+                        tracker.groups.remove(name,this);
+                        sOutput.writeObject(ack);
                         break;
                     case Quit:
                         break;
