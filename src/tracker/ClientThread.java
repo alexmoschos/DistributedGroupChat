@@ -49,6 +49,7 @@ public class ClientThread extends Thread {
                     sOutput.writeObject(r);
                     break;
                 }
+
             }
             System.out.println("My new id is " + id.toString());
             // we only enter here when the other guy is registered

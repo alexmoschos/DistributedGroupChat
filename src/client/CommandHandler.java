@@ -40,15 +40,59 @@ public class CommandHandler {
             }
         }
     }
-    public void execute(String command){
-        switch (command) {
-            case "r":  // register user to tracker.
+    public void execute (String command)throws Throwable{
+        int port = 3000;
+        String serverAddress = "localhost";
+            if(command == "r") { // register user to tracker.
                 Client.setClientId(registerClient());
-                break;
-            
-            default: 
+            }
+            else if(command==  "lg") {
+                Socket sock = new Socket(serverAddress, port);
+                ObjectOutputStream sOutput = new ObjectOutputStream(sock.getOutputStream());
+                ObjectInputStream sInput = new ObjectInputStream(sock.getInputStream());
+                sOutput.writeObject(new ControlMessage(ControlMessage.Type.ListGroups, ""));
+                ListGroupsReply x = (ListGroupsReply) sInput.readObject();
+                sock.close();
+                System.out.println(x.groups);
+                System.out.println("Hello World!");
+            }
+            else if(command.charAt(0) == 'l' && command.charAt(1) == 'm') {
+                System.out.println("Hello man!");
+                Socket sock = new Socket(serverAddress, port);
+                ObjectOutputStream sOutput = new ObjectOutputStream(sock.getOutputStream());
+                ObjectInputStream sInput = new ObjectInputStream(sock.getInputStream());
+                sOutput.writeObject(new ControlMessage(ControlMessage.Type.ListMembers,command.substring(4)));
+                ListMembersReply z;
+                z = (ListMembersReply) sInput.readObject();
+                sock.close();
+                System.out.println(z.users);
+            }
+            else if(command.charAt(0) == 'j'){
+                Socket sock = new Socket(serverAddress, port);
+                ObjectOutputStream sOutput = new ObjectOutputStream(sock.getOutputStream());
+                ObjectInputStream sInput = new ObjectInputStream(sock.getInputStream());
+                sOutput.writeObject(new ControlMessage(ControlMessage.Type.JoinGroup,command.substring(4)));
+                JoinGroupReply zz = (JoinGroupReply) sInput.readObject();
+                sock.close();
+                System.out.println(zz.users);
+            }
+            else if(command.charAt(0) == 'e'){
+                Socket sock = new Socket(serverAddress, port);
+                ObjectOutputStream sOutput = new ObjectOutputStream(sock.getOutputStream());
+                ObjectInputStream sInput = new ObjectInputStream(sock.getInputStream());
+                sOutput.writeObject(new ControlMessage(ControlMessage.Type.ExitGroup,command.substring(4)));
+                sock.close();
+
+            }
+            else if(command.charAt(0)=='q'){
+                Socket sock = new Socket(serverAddress, port);
+                ObjectOutputStream sOutput = new ObjectOutputStream(sock.getOutputStream());
+                ObjectInputStream sInput = new ObjectInputStream(sock.getInputStream());
+                sOutput.writeObject(new ControlMessage(ControlMessage.Type.Quit,""));
+                sock.close();
+            }
+            else
                 System.out.println("Unkown command. Type !h for the help menu");
-        }
     }
 
     public long registerClient() {
