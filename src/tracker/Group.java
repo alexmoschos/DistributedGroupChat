@@ -1,3 +1,7 @@
+package tracker;
+
+import tracker.ClientThread;
+
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 

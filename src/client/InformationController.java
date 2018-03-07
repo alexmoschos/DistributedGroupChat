@@ -1,3 +1,5 @@
+package client;
+
 import java.lang.Runnable;
 import java.io.IOException;
 import java.net.ServerSocket;

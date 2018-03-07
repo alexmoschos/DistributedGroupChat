@@ -1,8 +1,10 @@
+package common;
+
 import java.io.Serializable;
 
 public class ControlMessage implements Serializable {
     protected static final long serialVersionUID = 1112122200L;
-    enum Type {
+    public enum Type {
         Register,
         ListGroups,
         ListMembers,
@@ -17,7 +19,7 @@ public class ControlMessage implements Serializable {
         this.type = type;
         this.info = info;
     }
-    Type getType(){
+    public Type getType(){
         return type;
     }
 

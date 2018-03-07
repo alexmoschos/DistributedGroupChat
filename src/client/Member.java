@@ -1,3 +1,5 @@
+package client;
+
 public class Member {
     private long id;
     private String ip;

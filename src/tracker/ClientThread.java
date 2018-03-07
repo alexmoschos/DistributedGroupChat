@@ -1,8 +1,13 @@
+package tracker;
+
+import common.ControlMessage;
+import common.ControlReply;
+import common.ListGroupsReply;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.Vector;
 
 public class ClientThread extends Thread {
     private Socket socket;
@@ -45,7 +50,7 @@ public class ClientThread extends Thread {
             }
             System.out.println("My new id is " + id.toString());
             // we only enter here when the other guy is registered
-            String reply = "";
+            ControlReply reply;
             String name = "";
             while(true) {
                 ControlMessage c = (ControlMessage) sInput.readObject();
@@ -54,12 +59,11 @@ public class ClientThread extends Thread {
                         System.out.println("Something wrong happened this client registered twice" + id.toString());
                         break;
                     case ListGroups:
-                        reply = "Groups : ";
-//                        for(String n : tracker.groups.keySet()){
-//                            reply += n + ",";
-//                        }
-                        reply += "\n";
-                        sOutput.writeObject(reply);
+                        ListGroupsReply r = new ListGroupsReply();
+                        for(String n : tracker.groups.keySet()){
+                            r.groups.add(n);
+                        }
+                        sOutput.writeObject(r);
                         break;
                     case ListMembers:
                         name = c.getInfo();

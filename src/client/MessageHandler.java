@@ -1,3 +1,5 @@
+package client;
+
 import java.util.Iterator;
 
 public class MessageHandler {

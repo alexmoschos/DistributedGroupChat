@@ -1,3 +1,9 @@
+package tracker;
+
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.ServerSocket;
@@ -9,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Tracker {
     private ServerSocket server;
     private Vector<ClientThread> peers;
-    Group groups;
+    Multimap<String,ClientThread> groups;
     private int nextId;
     public int getNextId() {
         return nextId++;
@@ -18,7 +24,7 @@ public class Tracker {
     public Tracker(int PortNumber){
         nextId = 0;
         peers = new Vector<>();
-        groups = new Group();
+        groups = Multimaps.synchronizedMultimap(ArrayListMultimap.create());
         try {
             server = new ServerSocket(PortNumber);
         }
