@@ -24,9 +24,6 @@ public class Client {
         MessageHandler mh = new FifoMessageHandler();
         InformationController ic = new InformationController();
 
-        // start ic
-        new Thread(ic).start();
-
         // start message handler
         new Thread(mh).start();
 

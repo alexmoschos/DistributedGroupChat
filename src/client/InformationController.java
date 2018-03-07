@@ -11,11 +11,7 @@ import java.util.PriorityQueue;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class InformationController implements Runnable {
-    private ServerSocket server;
-    private Socket clientSocket;
-    private static final int PortNumber = 3001;
-
+public class InformationController {
     private static HashMap<Long, Group> groups;
     private static HashMap<Long, Member> members;
     
@@ -84,31 +80,5 @@ public class InformationController implements Runnable {
         Timer t = groups.get(groupId).timers.get(String.valueOf(msg.getUserId()) + "," + String.valueOf(msg.getMessageId()));
         t.cancel();
     }
-
-
-    public void run() {
-        try {
-            server = new ServerSocket(PortNumber);
-            clientSocket = null;
-            while (true) {
-                clientSocket = server.accept();
-                ObjectInputStream sInput  = new ObjectInputStream(clientSocket.getInputStream());
-                
-                try {
-                    String incomingMessage = (String) sInput.readObject();
-                    // parse the incomingMessage and update any necessary structures.
-                } catch (ClassNotFoundException e) {
-                    System.out.println(e.toString());
-                }
-                
-                clientSocket.close();
-                
-            }
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     
 }
