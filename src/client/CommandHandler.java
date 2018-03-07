@@ -8,6 +8,10 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class CommandHandler {
+    private Socket sock;
+    private ObjectOutputStream sOutput;
+    private ObjectInputStream sInput;
+
 
     public CommandHandler() {}
 
@@ -40,55 +44,56 @@ public class CommandHandler {
             }
         }
     }
-    public void execute (String command)throws Throwable{
+    private void beginConnection()throws Throwable{
         int port = 3000;
         String serverAddress = "localhost";
-            if(command == "r") { // register user to tracker.
-                Client.setClientId(registerClient());
+        sock = new Socket(serverAddress, port);
+        sOutput = new ObjectOutputStream(sock.getOutputStream());
+        sInput = new ObjectInputStream(sock.getInputStream());
+    }
+    public void execute (String command)throws Throwable{
+
+
+            if(command.equals("r")) { // register user to tracker.
+                this.beginConnection();
+                sOutput.writeObject(new ControlMessage(ControlMessage.Type.Register, "192.168.1.1,80,alexm",-1));
+                RegisterReply r = (RegisterReply) sInput.readObject();
+                sock.close();
+                System.out.println(r.id);
+                Client.setClientId(r.id);
             }
-            else if(command==  "lg") {
-                Socket sock = new Socket(serverAddress, port);
-                ObjectOutputStream sOutput = new ObjectOutputStream(sock.getOutputStream());
-                ObjectInputStream sInput = new ObjectInputStream(sock.getInputStream());
-                sOutput.writeObject(new ControlMessage(ControlMessage.Type.ListGroups, ""));
+            else if(command.equals("lg")){
+                this.beginConnection();
+                sOutput.writeObject(new ControlMessage(ControlMessage.Type.ListGroups, "", (int)Client.getClientId()));
                 ListGroupsReply x = (ListGroupsReply) sInput.readObject();
                 sock.close();
                 System.out.println(x.groups);
-                System.out.println("Hello World!");
             }
             else if(command.charAt(0) == 'l' && command.charAt(1) == 'm') {
                 System.out.println("Hello man!");
-                Socket sock = new Socket(serverAddress, port);
-                ObjectOutputStream sOutput = new ObjectOutputStream(sock.getOutputStream());
-                ObjectInputStream sInput = new ObjectInputStream(sock.getInputStream());
-                sOutput.writeObject(new ControlMessage(ControlMessage.Type.ListMembers,command.substring(4)));
+                this.beginConnection();
+                sOutput.writeObject(new ControlMessage(ControlMessage.Type.ListMembers,command.substring(3), (int)Client.getClientId()));
                 ListMembersReply z;
                 z = (ListMembersReply) sInput.readObject();
                 sock.close();
                 System.out.println(z.users);
             }
             else if(command.charAt(0) == 'j'){
-                Socket sock = new Socket(serverAddress, port);
-                ObjectOutputStream sOutput = new ObjectOutputStream(sock.getOutputStream());
-                ObjectInputStream sInput = new ObjectInputStream(sock.getInputStream());
-                sOutput.writeObject(new ControlMessage(ControlMessage.Type.JoinGroup,command.substring(4)));
+                this.beginConnection();
+                sOutput.writeObject(new ControlMessage(ControlMessage.Type.JoinGroup,command.substring(2), (int)Client.getClientId()));
                 JoinGroupReply zz = (JoinGroupReply) sInput.readObject();
                 sock.close();
                 System.out.println(zz.users);
             }
             else if(command.charAt(0) == 'e'){
-                Socket sock = new Socket(serverAddress, port);
-                ObjectOutputStream sOutput = new ObjectOutputStream(sock.getOutputStream());
-                ObjectInputStream sInput = new ObjectInputStream(sock.getInputStream());
-                sOutput.writeObject(new ControlMessage(ControlMessage.Type.ExitGroup,command.substring(4)));
+                this.beginConnection();
+                sOutput.writeObject(new ControlMessage(ControlMessage.Type.ExitGroup,command.substring(2), (int)Client.getClientId()));
                 sock.close();
 
             }
             else if(command.charAt(0)=='q'){
-                Socket sock = new Socket(serverAddress, port);
-                ObjectOutputStream sOutput = new ObjectOutputStream(sock.getOutputStream());
-                ObjectInputStream sInput = new ObjectInputStream(sock.getInputStream());
-                sOutput.writeObject(new ControlMessage(ControlMessage.Type.Quit,""));
+                this.beginConnection();
+                sOutput.writeObject(new ControlMessage(ControlMessage.Type.Quit,"", (int)Client.getClientId()));
                 sock.close();
             }
             else
