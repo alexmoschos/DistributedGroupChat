@@ -14,11 +14,20 @@ public class ControlMessage implements Serializable {
     }
     private Type type;
     private String info;
+    private int id;
 
     public ControlMessage(Type type, String info) {
+        System.out.println("DEPRECATED: Stop using this ControlMessage.java constructor");
         this.type = type;
         this.info = info;
     }
+
+    public ControlMessage(Type type, String info, int id) {
+        this.type = type;
+        this.info = info;
+        this.id = id;
+    }
+
     public Type getType(){
         return type;
     }
@@ -27,4 +36,7 @@ public class ControlMessage implements Serializable {
         return info;
     }
 
+    public int getId() {
+        return id;
+    }
 }
