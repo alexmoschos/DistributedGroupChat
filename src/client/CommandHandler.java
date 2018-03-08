@@ -93,7 +93,7 @@ public class CommandHandler {
                 try {
                     Group g = InformationController.getGroup(groupId);
                     if (g == null)
-                        g = new Group(groupId);
+                        g = new Group(groupId,mh);
                     g.dropMembers();
                     for (UserInfo user : zz.users) {
                         Member m = new Member(user.id, InetAddress.getByName(user.ip), user.port, user.username);

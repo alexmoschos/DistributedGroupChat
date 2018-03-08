@@ -75,6 +75,12 @@ public class InformationController {
         return groups.get(groupId).members.iterator();
     }
 
+    public static int getNumberOfMembersInGroup(String groupId) {
+        if (!groups.containsKey(groupId))
+            return 0;
+        return groups.get(groupId).members.size();
+    }
+
     public static Member getMember(Long memberId) {
         return members.get(memberId);
     }

@@ -12,11 +12,11 @@ public class Group {
     public HashMap<String, Timer> timers;
     public PriorityQueue<Message> messages;
     
-    public Group(String name) {
+    public Group(String name, MessageHandler mh) {
         this.name = name;
         members = new LinkedList<Member>();
         timers =new HashMap<>();
-        messages = new PriorityQueue<>();
+        messages = new PriorityQueue<>(11, mh.getComparator());
     }
 
     public void addMember(Member m) {
