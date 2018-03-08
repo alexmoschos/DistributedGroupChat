@@ -21,8 +21,19 @@ public class FifoMessageHandler extends MessageHandler {
 
         Message msg = new Message(clientId, groupId, messageId, message);
 
-        Iterator<Member> recipient = 
-            InformationController.getGroupMembers(Client.getCurrentGroupId());
+        Iterator<Member> recipient = null;
+
+        // critical section
+        // we need to make sure that GroupMembers won't
+        // be dropped (due to info update, caused by a
+        // heartbeat) before we can access them
+
+        InformationController.getLock().lock();
+        try {
+            recipient = InformationController.getGroupMembers(Client.getCurrentGroupId());
+        } finally {
+            InformationController.getLock().unlock();
+        }
 
 
         ByteArrayOutputStream bStream = new ByteArrayOutputStream();
@@ -34,10 +45,13 @@ public class FifoMessageHandler extends MessageHandler {
             byte[] serializedMessage = bStream.toByteArray();
             DatagramSocket socket = getSocket();
 
-            DatagramPacket packet 
-                = new DatagramPacket(serializedMessage, serializedMessage.length, getLocalAddress(), socket.getLocalPort());
-            
-            socket.send(packet);
+            // the following section isn't necessary, because
+            // recipient includes us.
+
+//            DatagramPacket packet
+//                = new DatagramPacket(serializedMessage, serializedMessage.length, getLocalAddress(), socket.getLocalPort());
+//
+//            socket.send(packet);
             
 
             if (recipient == null) {
@@ -48,7 +62,8 @@ public class FifoMessageHandler extends MessageHandler {
             while (recipient.hasNext()) {
                 Member m = recipient.next();
                 
-                packet = new DatagramPacket(serializedMessage, serializedMessage.length, m.getIp(), m.getPort());
+                DatagramPacket packet = new DatagramPacket(serializedMessage,
+                        serializedMessage.length, m.getIp(), m.getPort());
                 socket.send(packet);
             }
 
@@ -59,16 +74,22 @@ public class FifoMessageHandler extends MessageHandler {
     
     
     public void receiveMessage(Message msg) {
-        
-        // add message to group heap 
-        PriorityQueue<Message> messages = InformationController.getGroupMessages(msg.getGroupId());
-        if (messages == null) {
-            // group doesn't exist 
-            return;
-        }
+        // when receiving a Message we use all the data structures
+        // so this should be run in isolation
+        InformationController.getLock().lock();
+        try {
+            // add message to group heap
+            PriorityQueue<Message> messages = InformationController.getGroupMessages(msg.getGroupId());
+            if (messages == null) {
+                // group doesn't exist
+                return;
+            }
 
-        messages.add(msg);
-        deliverMessage(msg.getGroupId());
+            messages.add(msg);
+            deliverMessage(msg.getGroupId());
+        } finally {
+            InformationController.getLock().unlock();
+        }
     }
 
     public void deliverMessage(String groupId) {
