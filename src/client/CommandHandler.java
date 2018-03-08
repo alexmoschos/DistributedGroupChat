@@ -88,16 +88,23 @@ public class CommandHandler {
                 JoinGroupReply zz = (JoinGroupReply) sInput.readObject();
                 sock.close();
                 String groupId = command.substring(2);
-                Group g = InformationController.getGroup(groupId);
-                if (g == null)
-                    g = new Group(groupId);
-                g.dropMembers();
-                for (UserInfo user : zz.users) {
-                    Member m = new Member(user.id, InetAddress.getByName(user.ip), user.port, user.username);
-                    g.addMember(m);
-                    InformationController.addMember(m);
+                // acquire lock
+                InformationController.getLock().lock();
+                try {
+                    Group g = InformationController.getGroup(groupId);
+                    if (g == null)
+                        g = new Group(groupId);
+                    g.dropMembers();
+                    for (UserInfo user : zz.users) {
+                        Member m = new Member(user.id, InetAddress.getByName(user.ip), user.port, user.username);
+                        g.addMember(m);
+                        InformationController.addMember(m);
+                    }
+                    InformationController.addGroup(g);
+                } finally {
+                    InformationController.getLock().unlock();
                 }
-                InformationController.addGroup(g);
+                // end of critical section
                 System.out.println(zz.users);
             }
             else if(command.charAt(0) == 'e'){

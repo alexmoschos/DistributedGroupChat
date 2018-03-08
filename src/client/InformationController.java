@@ -10,8 +10,11 @@ import java.util.Iterator;
 import java.util.PriorityQueue;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class InformationController {
+    private static Lock lock = new ReentrantLock();
     private static HashMap<String, Group> groups;
     private static HashMap<Long, Member> members;
     
@@ -20,81 +23,135 @@ public class InformationController {
         members = new HashMap<Long, Member>();
     }
 
+    public static Lock getLock() {
+        return lock;
+    }
+
     public static String getGroupName(String groupId) {
-        if (!groups.containsKey(groupId))
-            return null;
-        return groups.get(groupId).name;
+        lock.lock();
+        try {
+            if (!groups.containsKey(groupId))
+                return null;
+            return groups.get(groupId).name;
+        } finally {
+            lock.unlock();
+        }
     }
 
     public static void addMember(Member m) {
-        if (members.containsKey(m.getId()))
-            return;
+        lock.lock();
+        try {
+            if (members.containsKey(m.getId()))
+                return;
 
-        members.put(m.getId(), m);
+            members.put(m.getId(), m);
+        } finally {
+            lock.unlock();
+        }
     }
 
     public static Group getGroup(String groupId) {
-        return groups.get(groupId);
+        lock.lock();
+        try {
+            return groups.get(groupId);
+        } finally {
+            lock.unlock();
+        }
     }
     public static void addGroup(Group g) {
-        if (!groups.containsKey(g.name));
-            groups.put(g.name, g);
+        lock.lock();
+        try {
+            if (!groups.containsKey(g.name))
+                groups.put(g.name, g);
+        } finally {
+            lock.unlock();
+        }
     }
     public static Iterator<Member> getGroupMembers(String groupId) {
-        if (!groups.containsKey(groupId))
-            return null;
-        return groups.get(groupId).members.iterator();
+        lock.lock();
+        try {
+            if (!groups.containsKey(groupId))
+                return null;
+            return groups.get(groupId).members.iterator();
+        } finally {
+            lock.unlock();
+        }
     }
 
     public static Member getMember(Long memberId) {
-        return members.get(memberId);
+        lock.lock();
+        try {
+            return members.get(memberId);
+        } finally {
+            lock.unlock();
+        }
     }
 
     public static PriorityQueue<Message> getGroupMessages(String groupId) {
-        if (!groups.containsKey(groupId)) 
-            return null;
-        return groups.get(groupId).messages;
+        lock.lock();
+        try {
+            if (!groups.containsKey(groupId))
+                return null;
+            return groups.get(groupId).messages;
+        } finally {
+            lock.unlock();
+        }
     }
 
     public static void addMessageToGroup(String groupId, Message m) {
-        if (!groups.containsKey(groupId))
-            return;
-        groups.get(groupId).messages.add(m);
+        lock.lock();
+        try {
+            if (!groups.containsKey(groupId))
+                return;
+            groups.get(groupId).messages.add(m);
+        } finally {
+            lock.unlock();
+        }
     }
 
     public static void setMessageTimer(String groupId, Message msg, MessageHandler mh) {
-        if (!groups.containsKey(groupId))
-            return;
-        // if timer already exists return
-        if (groups.get(groupId).timers.containsKey(String.valueOf(msg.getUserId()) + "," + String.valueOf(msg.getMessageId())))
-            return;
+        lock.lock();
+        try {
+            if (!groups.containsKey(groupId))
+                return;
+            // if timer already exists return
+            if (groups.get(groupId).timers.containsKey(String.valueOf(msg.getUserId()) + "," + String.valueOf(msg.getMessageId())))
+                return;
 
-        Timer t = new Timer();
-        t.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                Member m = InformationController.getMember(msg.getUserId());
-                mh.deliverMessage(groupId);
-                if (m.getExpectedMessageId() < msg.getMessageId()) {
-                    m.setExpectedMessageId(msg.getMessageId());
-                    mh.deliverMessage(msg.getGroupId());
+            Timer t = new Timer();
+            t.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    Member m = InformationController.getMember(msg.getUserId());
+                    mh.deliverMessage(groupId);
+                    if (m.getExpectedMessageId() < msg.getMessageId()) {
+                        m.setExpectedMessageId(msg.getMessageId());
+                        mh.deliverMessage(msg.getGroupId());
+                    }
                 }
-            }
-        },1000L);
+            }, 1000L);
 
-        groups.get(groupId).timers.put(String.valueOf(msg.getUserId()) + "," + String.valueOf(msg.getMessageId()), t);
+            groups.get(groupId).timers.put(String.valueOf(msg.getUserId()) + "," + String.valueOf(msg.getMessageId()), t);
+        } finally {
+            lock.unlock();
+        }
     }
 
     public static void cancelMessageTimer(String groupId, Message msg) {
-        if (!groups.containsKey(groupId))
-            return;
-        
-        // ignore if timer doesn't exist
-        if (!groups.get(groupId).timers.containsKey(String.valueOf(msg.getUserId()) + "," + String.valueOf(msg.getMessageId())))
-            return;
-        
-        Timer t = groups.get(groupId).timers.get(String.valueOf(msg.getUserId()) + "," + String.valueOf(msg.getMessageId()));
-        t.cancel();
+        lock.lock();
+        try {
+            if (!groups.containsKey(groupId))
+                return;
+
+            // ignore if timer doesn't exist
+            if (!groups.get(groupId).timers.containsKey(String.valueOf(msg.getUserId()) + "," + String.valueOf(msg.getMessageId())))
+                return;
+
+            Timer t = groups.get(groupId).timers.get(String.valueOf(msg.getUserId()) + "," + String.valueOf(msg.getMessageId()));
+            t.cancel();
+        } finally {
+            lock.unlock();
+        }
     }
     
 }
