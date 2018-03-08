@@ -10,7 +10,8 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.PriorityQueue;
 
-public class IsisMessageHandler extends  MessageHandler{
+
+public class IsisMessageHandler extends MessageHandler{
 
     private long s = 0L;
 
@@ -192,6 +193,7 @@ public class IsisMessageHandler extends  MessageHandler{
                 for (Message init_message : messages) {
                     if (init_message.equals(msg)) {
                         messages.remove(msg);
+                        s = Long.max(s, msg.getSuggestedPriority());
                         init_message.setSuggestedPriority(msg.getSuggestedPriority());
                         init_message.setUserSuggest(msg.getUserSuggest());
                         init_message.setStatus(true);
