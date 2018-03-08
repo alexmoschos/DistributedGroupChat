@@ -1,16 +1,21 @@
 package client;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Iterator;
 import java.util.Scanner;
 
 import client.FifoMessageHandler;
+import common.ControlMessage;
+import common.JoinGroupReply;
+import common.ListMembersReply;
+import common.UserInfo;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import javax.swing.text.html.HTMLDocument;
 import java.lang.Thread;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class Client {
     private static long clientId = -1L;
@@ -23,6 +28,56 @@ public class Client {
         MessageHandler mh = new FifoMessageHandler();
         CommandHandler ch = new CommandHandler(mh);
         InformationController ic = new InformationController();
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Socket sock;
+                ObjectOutputStream sOutput;
+                ObjectInputStream sInput;
+                int port = 3000;
+                String serverAddress = "localhost";
+                try {
+                    for (String group : InformationController.getAllGroups()) {
+                        sock = new Socket(serverAddress, port);
+                        sOutput = new ObjectOutputStream(sock.getOutputStream());
+                        sInput = new ObjectInputStream(sock.getInputStream());
+                        sOutput.writeObject(new ControlMessage(ControlMessage.Type.JoinGroup, group, (int) Client.getClientId()));
+
+                        JoinGroupReply z;
+                        z = (JoinGroupReply) sInput.readObject();
+                        sock.close();
+                        InformationController.getLock().lock();
+                        try {
+                            Group g = InformationController.getGroup(group);
+                            if (g == null)
+                                g = new Group(group);
+                            g.dropMembers();
+                            for (UserInfo user : z.users) {
+                                Member m = new Member(user.id, InetAddress.getByName(user.ip), user.port, user.username);
+                                g.addMember(m);
+                                InformationController.addMember(m);
+                            }
+                            InformationController.addGroup(g);
+                        } finally {
+                            InformationController.getLock().unlock();
+                        }
+                        //System.out.println(z.users);
+                    }
+                }
+                catch (IOException e) {
+                        // System.out.println(e);
+                }
+                catch (ClassNotFoundException e){
+                    System.out.println(e);
+                }
+
+
+
+
+
+            }
+        },2*1000, 2*1000);
 
         // start message handler
         new Thread(mh).start();
@@ -47,6 +102,9 @@ public class Client {
                 }
             } catch(IOException e) {
                 System.out.println(e.toString());
+            }
+            catch (StringIndexOutOfBoundsException e){
+                System.out.println(e);
             }
         }
 

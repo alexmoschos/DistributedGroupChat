@@ -111,12 +111,26 @@ public class CommandHandler {
                 this.beginConnection();
                 sOutput.writeObject(new ControlMessage(ControlMessage.Type.ExitGroup,command.substring(2), (int)Client.getClientId()));
                 sock.close();
+                InformationController.deleteGroup(command.substring(2));
+
 
             }
             else if(command.charAt(0)=='q'){
                 this.beginConnection();
                 sOutput.writeObject(new ControlMessage(ControlMessage.Type.Quit,"", (int)Client.getClientId()));
+                ControlReply zz = (ControlReply) sInput.readObject();
                 sock.close();
+                System.exit(0);
+            }
+            else if(command.charAt(0) == 'w'){
+                String groupname = command.substring(2);
+                Group g = InformationController.getGroup(groupname);
+                if(g == null){
+                    System.out.println("There is no such group" );
+                }
+                else{
+                    Client.setCurrentGroupId(groupname);
+                }
             }
             else
                 System.out.println("Unkown command. Type !h for the help menu");

@@ -5,11 +5,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.ObjectInputStream;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.PriorityQueue;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -34,6 +30,18 @@ public class InformationController {
                 return null;
             return groups.get(groupId).name;
         } finally {
+            lock.unlock();
+        }
+    }
+    public static void deleteGroup(String groupId){
+        lock.lock();
+        try{
+            if(!groups.containsKey(groupId))
+                return;
+            groups.remove(groupId);
+            return;
+        }
+        finally {
             lock.unlock();
         }
     }
@@ -66,6 +74,20 @@ public class InformationController {
         } finally {
             lock.unlock();
         }
+    }
+    public static ArrayList<String> getAllGroups(){
+        lock.lock();
+        ArrayList<String> result = new ArrayList<String>();
+        Iterator it = InformationController.groups.entrySet().iterator();
+        while (it.hasNext()) {
+            HashMap.Entry pair = (HashMap.Entry)it.next();
+            result.add((String)pair.getKey());
+            //System.out.println(pair.getKey() + " = " + pair.getValue());
+            //it.remove(); // avoids a ConcurrentModificationException
+        }
+        lock.unlock();
+        return result;
+
     }
     public static Iterator<Member> getGroupMembers(String groupId) {
         lock.lock();
