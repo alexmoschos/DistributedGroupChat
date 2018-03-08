@@ -81,10 +81,7 @@ public class ClientThread extends Thread {
                     ListMembersReply lmr = new ListMembersReply();
                     lmr.users = new ArrayList<>();
                     if(tracker.groups.containsKey(name)) {
-                        for (UserInfo t : tracker.groups.get(name)) {
-                            lmr.users.add(t.username);
-                        }
-
+                        lmr.users = new ArrayList<>(tracker.groups.get(name));
                     }
                     sOutput.writeObject(lmr);
                     break;

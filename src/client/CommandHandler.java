@@ -134,6 +134,7 @@ public class CommandHandler {
             }
             else
                 System.out.println("Unkown command. Type !h for the help menu");
+
     }
 
     public long registerClient() {

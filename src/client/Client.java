@@ -42,10 +42,10 @@ public class Client {
                         sock = new Socket(serverAddress, port);
                         sOutput = new ObjectOutputStream(sock.getOutputStream());
                         sInput = new ObjectInputStream(sock.getInputStream());
-                        sOutput.writeObject(new ControlMessage(ControlMessage.Type.JoinGroup, group, (int) Client.getClientId()));
+                        sOutput.writeObject(new ControlMessage(ControlMessage.Type.ListMembers, group, (int) Client.getClientId()));
 
-                        JoinGroupReply z;
-                        z = (JoinGroupReply) sInput.readObject();
+                        ListMembersReply z;
+                        z = (ListMembersReply) sInput.readObject();
                         sock.close();
                         InformationController.getLock().lock();
                         try {
@@ -100,6 +100,7 @@ public class Client {
                     }
                     mh.sendMessage(line);
                 }
+                System.out.print("[alexm]>");
             } catch(IOException e) {
                 System.out.println(e.toString());
             }
