@@ -143,7 +143,7 @@ public class FifoMessageHandler extends MessageHandler {
                 {
                     FileWriter fstream = new FileWriter(Client.getClientId()+"_"+groupName+".txt", true); //true tells to append data.
                     out = new BufferedWriter(fstream);
-                    out.write("in " + groupName + " " + sender.getUsername() + " says:: ");
+                    //out.write("in " + groupName + " " + sender.getUsername() + " says:: ");
                     out.write(m.getMessage()+"\n");
                 }
                 catch (IOException e)
