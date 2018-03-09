@@ -8,6 +8,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+
 
 
 public class FifoMessageHandler extends MessageHandler {
@@ -134,9 +137,36 @@ public class FifoMessageHandler extends MessageHandler {
             }
 
             InformationController.cancelMessageTimer(m.getGroupId(), m);
+            if(Client.isDebugMode()){
+                BufferedWriter out = null;
+                try
+                {
+                    FileWriter fstream = new FileWriter(Client.getClientId()+"_"+groupName+".txt", true); //true tells to append data.
+                    out = new BufferedWriter(fstream);
+                    out.write("in " + groupName + " " + sender.getUsername() + " says:: ");
+                    out.write(m.getMessage()+"\n");
+                }
+                catch (IOException e)
+                {
+                    System.err.println("Error: " + e.getMessage());
+                }
+                finally
+                {
+                    if(out != null) {
+                        try{
+                            out.close();
+                        }
+                        catch (IOException e){
+                            System.err.println("Error: " + e.getMessage());
+                        }
 
-            System.out.print("in " + groupName + " " + sender.getUsername() + " says:: ");
-            System.out.println(m.getMessage());
+                    }
+                }
+            }
+            else{
+                System.out.print("in " + groupName + " " + sender.getUsername() + " says:: ");
+                System.out.println(m.getMessage());
+            }
 
             //and increase the expectedMessageId
             sender.setExpectedMessageId(m.getMessageId()+1);

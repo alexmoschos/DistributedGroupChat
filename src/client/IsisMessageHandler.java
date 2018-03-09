@@ -1,9 +1,6 @@
 package  client;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.util.Comparator;
@@ -230,8 +227,36 @@ public class IsisMessageHandler extends MessageHandler{
         PriorityQueue<Message> messages = g.messages;
         while (!messages.isEmpty() && messages.peek().getStatus()) {
             Member sender = InformationController.getMember(messages.peek().getUserId());
-            System.out.print("in " + groupName + " " + sender.getUsername() + " says:: ");
-            System.out.println(messages.peek().getMessage());
+            if(Client.isDebugMode()){
+                BufferedWriter out = null;
+                try
+                {
+                    FileWriter fstream = new FileWriter(Client.getClientId()+"_"+groupName+".txt", true); //true tells to append data.
+                    out = new BufferedWriter(fstream);
+                    out.write("in " + groupName + " " + sender.getUsername() + " says:: ");
+                    out.write(messages.peek().getMessage()+"\n");
+                }
+                catch (IOException e)
+                {
+                    System.err.println("Error: " + e.getMessage());
+                }
+                finally
+                {
+                    if(out != null) {
+                        try{
+                            out.close();
+                        }
+                        catch (IOException e){
+                            System.err.println("Error: " + e.getMessage());
+                        }
+
+                    }
+                }
+            }
+            else{
+                System.out.print("in " + groupName + " " + sender.getUsername() + " says:: ");
+                System.out.println(messages.peek().getMessage());
+            }
             messages.remove();
         }
     }

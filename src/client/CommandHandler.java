@@ -8,6 +8,9 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Scanner;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class CommandHandler {
     private Socket sock;
@@ -20,8 +23,8 @@ public class CommandHandler {
     }
 
     public static void main(String[] args) throws Throwable {
-        int port = 3000;
-        String serverAddress = "localhost";
+        int port = Client.getTrackerPort();
+        String serverAddress = Client.getTrackerAddr();
         Socket sock = new Socket(serverAddress, port);
         ObjectOutputStream sOutput = new ObjectOutputStream(sock.getOutputStream());
         ObjectInputStream sInput = new ObjectInputStream(sock.getInputStream());
@@ -49,8 +52,8 @@ public class CommandHandler {
         }
     }
     private void beginConnection()throws Throwable{
-        int port = 3000;
-        String serverAddress = "localhost";
+        int port = Client.getTrackerPort();
+        String serverAddress = Client.getTrackerAddr();
         sock = new Socket(serverAddress, port);
         sOutput = new ObjectOutputStream(sock.getOutputStream());
         sInput = new ObjectInputStream(sock.getInputStream());
@@ -122,13 +125,12 @@ public class CommandHandler {
                 sock.close();
                 System.exit(0);
             }
-            else if(command.charAt(0) == 'w'){
+            else if(command.charAt(0) == 'w') {
                 String groupname = command.substring(2);
                 Group g = InformationController.getGroup(groupname);
-                if(g == null){
-                    System.out.println("There is no such group" );
-                }
-                else{
+                if (g == null) {
+                    System.out.println("There is no such group");
+                } else {
                     Client.setCurrentGroupId(groupname);
                 }
             }
