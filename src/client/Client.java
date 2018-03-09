@@ -25,7 +25,7 @@ public class Client {
 
         /* main loop to read input from the user */
         BufferedReader br = new BufferedReader(new InputStreamReader (System.in));
-        MessageHandler mh = new FifoMessageHandler();
+        MessageHandler mh = new IsisMessageHandler();
         CommandHandler ch = new CommandHandler(mh);
         InformationController ic = new InformationController();
         Timer timer = new Timer();
@@ -51,7 +51,7 @@ public class Client {
                         try {
                             Group g = InformationController.getGroup(group);
                             if (g == null)
-                                g = new Group(group);
+                                g = new Group(group,mh);
                             g.dropMembers();
                             for (UserInfo user : z.users) {
                                 Member m = new Member(user.id, InetAddress.getByName(user.ip), user.port, user.username);

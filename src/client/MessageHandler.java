@@ -10,12 +10,14 @@ import java.lang.Runnable;
 import java.io.ObjectInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Comparator;
 
 abstract public class MessageHandler implements Runnable{
     private DatagramSocket socket = null;
     private long nextMessageId = 0L;
     private InetAddress localAddress = null;
     private byte[] buf = new byte[65500];
+    private Comparator<Message> comparator = null;
 
     public MessageHandler() {
         while (localAddress == null) {
@@ -54,6 +56,14 @@ abstract public class MessageHandler implements Runnable{
 
     public InetAddress getLocalAddress() {
         return localAddress;
+    }
+
+    public void setComparator(Comparator<Message> comparator) {
+        this.comparator= comparator;
+    }
+
+    public Comparator<Message> getComparator() {
+        return comparator;
     }
 
     public void run() {

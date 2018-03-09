@@ -19,7 +19,7 @@ public class FifoMessageHandler extends MessageHandler {
         String groupId = Client.getCurrentGroupId();
         long messageId = getNextMessageId();
 
-        Message msg = new Message(clientId, groupId, messageId, message);
+        Message msg = new Message(clientId, groupId, messageId, 0,0, false,0, message);
 
         Iterator<Member> recipient = null;
 

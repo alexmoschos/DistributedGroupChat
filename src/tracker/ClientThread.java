@@ -89,7 +89,14 @@ public class ClientThread extends Thread {
                     name = c.getInfo();
                     JoinGroupReply inf = new JoinGroupReply();
                     inf.users = new ArrayList<>();
-                    tracker.groups.put(name,new UserInfo(username,id,ip,port));
+                    if(tracker.groups.containsKey(name)){
+                        if(!tracker.groups.get(name).contains(new UserInfo(username,id,ip,port))){
+                            tracker.groups.put(name,new UserInfo(username,id,ip,port));
+                        }
+                    } else {
+                        tracker.groups.put(name,new UserInfo(username,id,ip,port));
+
+                    }
                     if(tracker.groups.containsKey(name)){
                         inf.users = new ArrayList<>(tracker.groups.get(name));
                     }
