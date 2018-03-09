@@ -20,23 +20,72 @@ import java.util.TimerTask;
 public class Client {
     private static long clientId = -1L;
     private static String currentGroupId = "distrib";
+    private static boolean debugMode = false;
+
+    public static boolean isDebugMode() {
+        return debugMode;
+    }
+
+    public static int getTrackerPort() {
+        return trackerPort;
+    }
+
+    public static String getTrackerAddr() {
+        return trackerAddr;
+    }
+
+    public static String getProtocol() {
+        return protocol;
+    }
+
+    private static int trackerPort = 3000;
+    private static String trackerAddr = "localhost";
+    private static String protocol = "fifo";
+
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, Throwable {
 
         /* main loop to read input from the user */
         BufferedReader br = new BufferedReader(new InputStreamReader (System.in));
-        MessageHandler mh = new IsisMessageHandler();
-        CommandHandler ch = new CommandHandler(mh);
+
+
         InformationController ic = new InformationController();
         Timer timer = new Timer();
+        for (String arg : args) {
+            String[] parts = arg.split("=");
+            switch (parts[0]){
+                case "debug":
+                    debugMode = Boolean.valueOf(parts[1]);
+                    break;
+                case "tracker":
+                    String[] addr = parts[1].split(":");
+                    trackerAddr = addr[0];
+                    trackerPort = Integer.parseInt(addr[1]);
+                    break;
+                case "protocol":
+                    protocol = parts[1];
+                    break;
+                default:
+                    System.out.println("Invalid argument");
+            }
+        }
+//        System.out.println(debugMode);
+//        System.out.println(trackerAddr);
+//        System.out.println(trackerPort);
+//        System.out.println(protocol);
+        MessageHandler mh ;
+        if(protocol.equals("fifo")) mh = new FifoMessageHandler();
+        else mh = new IsisMessageHandler();
+        CommandHandler ch = new CommandHandler(mh);
+        new Thread(mh).start();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 Socket sock;
                 ObjectOutputStream sOutput;
                 ObjectInputStream sInput;
-                int port = 3000;
-                String serverAddress = "localhost";
+                int port = trackerPort;
+                String serverAddress = trackerAddr;
                 try {
                     for (String group : InformationController.getAllGroups()) {
                         sock = new Socket(serverAddress, port);
@@ -80,7 +129,7 @@ public class Client {
         },2*1000, 2*1000);
 
         // start message handler
-        new Thread(mh).start();
+
 
         while (true) {
             try {

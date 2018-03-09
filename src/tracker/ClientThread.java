@@ -7,6 +7,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class ClientThread extends Thread {
     private Socket socket;
@@ -18,7 +22,6 @@ public class ClientThread extends Thread {
     Integer id = null;
     String username;
     public ClientThread(Socket socket, Tracker tracker){
-        System.out.println("A new client thread has been created");
         this.socket = socket;
         this.tracker = tracker;
         try {
@@ -29,8 +32,27 @@ public class ClientThread extends Thread {
             System.err.println("Exception creating new Input/output Streams: " + eIO);
         }
     }
+    private void scheduleTimer(int id) throws IllegalStateException {
+        //System.out.println("I entered here");
+        Timer x = new Timer();
+
+        x.schedule(new TimerTask() {
+            @Override
+            public void run() {
+
+                System.out.println("A client has died " + id);
+                synchronized (tracker.groups) {
+                    for (String key : tracker.groups.keySet()) {
+                        tracker.groups.remove(key, new UserInfo(username, id, ip, port));
+                    }
+                }
+            }
+        },10*1000);
+
+        tracker.heartbeat.set(id,x);
+    }
     public void run() {
-        System.out.println("Client thread started");
+        // System.out.println("Client thread started");
         try {
             ControlMessage c = (ControlMessage) sInput.readObject();
             if (c.getId() == -1 && c.getType() == ControlMessage.Type.Register) {
@@ -44,12 +66,24 @@ public class ClientThread extends Thread {
                 sOutput.writeObject(r);
                 UserInfo client = new UserInfo(username,id,ip,port);
                 tracker.clients.add(id,client);
+                tracker.timerLocks.add(id,new ReentrantLock());
+                tracker.timerLocks.get(id).lock();
+                tracker.heartbeat.add(id,new Timer());
+                scheduleTimer(id);
+                tracker.timerLocks.get(id).unlock();
+
             } else if (c.getId() == -1){
 
             } else {
                 id = c.getId();
 //                System.out.println(id);
 //                System.out.println(tracker.clients);
+                tracker.timerLocks.get(id).lock();
+                //System.out.println("Timer cancelled" + id);
+                tracker.heartbeat.get(id).cancel();
+                scheduleTimer(id);
+                tracker.timerLocks.get(id).unlock();
+
                 UserInfo client = tracker.clients.get(id);
                 username = client.username;
                 ip = client.ip;
@@ -89,13 +123,14 @@ public class ClientThread extends Thread {
                     name = c.getInfo();
                     JoinGroupReply inf = new JoinGroupReply();
                     inf.users = new ArrayList<>();
-                    if(tracker.groups.containsKey(name)){
-                        if(!tracker.groups.get(name).contains(new UserInfo(username,id,ip,port))){
-                            tracker.groups.put(name,new UserInfo(username,id,ip,port));
+                    synchronized (tracker.groups) {
+                        if (tracker.groups.containsKey(name)) {
+                            if (!tracker.groups.get(name).contains(new UserInfo(username, id, ip, port))) {
+                                tracker.groups.put(name, new UserInfo(username, id, ip, port));
+                            }
+                        } else {
+                            tracker.groups.put(name, new UserInfo(username, id, ip, port));
                         }
-                    } else {
-                        tracker.groups.put(name,new UserInfo(username,id,ip,port));
-
                     }
                     if(tracker.groups.containsKey(name)){
                         inf.users = new ArrayList<>(tracker.groups.get(name));
@@ -106,13 +141,18 @@ public class ClientThread extends Thread {
                 case ExitGroup:
                     name = c.getInfo();
                     ControlReply ack = new ControlReply();
-                    tracker.groups.remove(name,new UserInfo(username,id,ip,port));
+                    synchronized (tracker.groups) {
+                        tracker.groups.remove(name, new UserInfo(username, id, ip, port));
+                    }
                     sOutput.writeObject(ack);
                     break;
                 case Quit:
-                    for(String key : tracker.groups.keySet()){
-                        tracker.groups.remove(key,new UserInfo(username,id,ip,port));
+                    synchronized (tracker.groups) {
+                        for (String key : tracker.groups.keySet()) {
+                            tracker.groups.remove(key, new UserInfo(username, id, ip, port));
+                        }
                     }
+
                     ControlReply ackk = new ControlReply();
                     sOutput.writeObject(ackk);
                     break;
