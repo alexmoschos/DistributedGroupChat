@@ -31,7 +31,7 @@ done
 
 for i in $(seq 1 $CLIENTS)
 do
-    java -cp "${BIN_DIR}" client.Client debug=true tracker=localhost:3000 protocol=fifo < client_$i &
+    java -cp "${BIN_DIR}" client.Client debug=true tracker=localhost:3000 protocol=$PROTOCOL < client_$i &
     clients[$i]=$!
     echo started client $i
 done
@@ -67,12 +67,23 @@ kill -9 $tracker_pid
 kill -9 $controller_pid
 rm control_pipe client_*
 
-for i in $(seq 1 $CLIENTS)
-do
-    # test for fifo consistency
-    a=$(($i -1))
-    java FifoTester ${MSG_DIR}/messages*.txt < ${a}_distrib.txt
-done
+if [ "$PROTOCOL" == "fifo" ]
+then
+    for i in $(seq 1 $CLIENTS)
+    do
+        # test for fifo consistency
+        a=$(($i -1))
+        java FifoTester ${MSG_DIR}/messages*.txt < ${a}_distrib.txt
+    done
+else
+    echo "mpika edo"
+    java TotalOrderTester *distrib*
+    echo "vgika edo"
+
+fi
+
+rm *distrib*
+
 
 
 
