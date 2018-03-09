@@ -60,21 +60,26 @@ public class ClientThread extends Thread {
                 ip = parts[0];
                 port = Integer.parseInt(parts[1]);
                 username = parts[2];
+
+                tracker.clientLock.lock();
                 id = tracker.getNextId();
                 RegisterReply r = new RegisterReply();
                 r.id = id;
                 sOutput.writeObject(r);
                 UserInfo client = new UserInfo(username,id,ip,port);
-                synchronized(tracker.clients) {
-                    tracker.clients.add(id, client);
-                }
-                synchronized(tracker.timerLocks) {
+                tracker.clients.add(id, client);
+
+                tracker.heartbeatLock.lock();
                     tracker.timerLocks.add(id, new ReentrantLock());
-                }
+                tracker.heartbeatLock.unlock();
+
                 tracker.timerLocks.get(id).lock();
                 tracker.heartbeat.add(id,new Timer());
                 scheduleTimer(id);
                 tracker.timerLocks.get(id).unlock();
+                
+                tracker.clientLock.unlock();
+
 
             } else if (c.getId() == -1){
 
