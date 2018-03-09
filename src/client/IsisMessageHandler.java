@@ -233,7 +233,7 @@ public class IsisMessageHandler extends MessageHandler{
                 {
                     FileWriter fstream = new FileWriter(Client.getClientId()+"_"+groupName+".txt", true); //true tells to append data.
                     out = new BufferedWriter(fstream);
-                    out.write("in " + groupName + " " + sender.getUsername() + " says:: ");
+                    //out.write("in " + groupName + " " + sender.getUsername() + " says:: ");
                     out.write(messages.peek().getMessage()+"\n");
                 }
                 catch (IOException e)
