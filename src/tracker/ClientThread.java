@@ -65,8 +65,12 @@ public class ClientThread extends Thread {
                 r.id = id;
                 sOutput.writeObject(r);
                 UserInfo client = new UserInfo(username,id,ip,port);
-                tracker.clients.add(id,client);
-                tracker.timerLocks.add(id,new ReentrantLock());
+                synchronized(tracker.clients) {
+                    tracker.clients.add(id, client);
+                }
+                synchronized(tracker.timerLocks) {
+                    tracker.timerLocks.add(id, new ReentrantLock());
+                }
                 tracker.timerLocks.get(id).lock();
                 tracker.heartbeat.add(id,new Timer());
                 scheduleTimer(id);
@@ -83,8 +87,10 @@ public class ClientThread extends Thread {
                 tracker.heartbeat.get(id).cancel();
                 scheduleTimer(id);
                 tracker.timerLocks.get(id).unlock();
-
-                UserInfo client = tracker.clients.get(id);
+                UserInfo client = null;
+                synchronized (tracker.clients) {
+                    client = tracker.clients.get(id);
+                }
                 username = client.username;
                 ip = client.ip;
                 port = client.port;
