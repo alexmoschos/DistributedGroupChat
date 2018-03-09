@@ -19,9 +19,12 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Tracker {
     private ServerSocket server;
     //ConcurrentHashMap<ClientInfo,ClientThread> aliveClients;
-    List<UserInfo> clients;
-    List<Timer> heartbeat;
-    List<Lock> timerLocks;
+    final List<UserInfo> clients;
+    Lock clientLock;
+
+    final ArrayList<Timer> heartbeat;
+    Lock heartbeatLock;
+    final ArrayList<Lock> timerLocks;
     Multimap<String,UserInfo> groups;
     private final AtomicInteger nextId = new AtomicInteger();
     public int getNextId() {
@@ -31,9 +34,12 @@ public class Tracker {
     public Tracker(int PortNumber){
         nextId.set(0);
         groups = Multimaps.synchronizedMultimap(ArrayListMultimap.create());
-        clients = new CopyOnWriteArrayList<>();
-        heartbeat = new CopyOnWriteArrayList<>();
-        timerLocks = new CopyOnWriteArrayList<>();
+        clients = new ArrayList<>();
+        heartbeat = new ArrayList<>();
+        timerLocks = new ArrayList<>();
+        clientLock = new ReentrantLock();
+        heartbeatLock = new ReentrantLock();
+
         try {
             server = new ServerSocket(PortNumber);
         }
