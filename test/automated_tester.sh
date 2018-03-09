@@ -45,7 +45,7 @@ do
 done
 
 # wait for 2 seconds for the heartbeat to reach every client
-sleep 2
+sleep 4
 
 # start sending messages
 for i in $(seq 1 $CLIENTS)
@@ -76,10 +76,7 @@ then
         java FifoTester ${MSG_DIR}/messages*.txt < ${a}_distrib.txt
     done
 else
-    echo "mpika edo"
     java TotalOrderTester *distrib*
-    echo "vgika edo"
-
 fi
 
 rm *distrib*
