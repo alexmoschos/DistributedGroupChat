@@ -3,9 +3,7 @@ package  client;
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.PriorityQueue;
+import java.util.*;
 
 
 public class IsisMessageHandler extends MessageHandler{
@@ -225,39 +223,80 @@ public class IsisMessageHandler extends MessageHandler{
         }
         String groupName = g.name;
         PriorityQueue<Message> messages = g.messages;
+        Queue<Message> isis_messages = g.isis_messages;
         while (!messages.isEmpty() && messages.peek().getStatus()) {
-            Member sender = InformationController.getMember(messages.peek().getUserId());
-            if(Client.isDebugMode()){
-                BufferedWriter out = null;
-                try
-                {
-                    FileWriter fstream = new FileWriter(Client.getClientId()+"_"+groupName+".txt", true); //true tells to append data.
-                    out = new BufferedWriter(fstream);
-                    //out.write("in " + groupName + " " + sender.getUsername() + " says:: ");
-                    out.write(messages.peek().getMessage()+"\n");
-                }
-                catch (IOException e)
-                {
-                    System.err.println("Error: " + e.getMessage());
-                }
-                finally
-                {
-                    if(out != null) {
-                        try{
-                            out.close();
-                        }
-                        catch (IOException e){
-                            System.err.println("Error: " + e.getMessage());
-                        }
 
+
+            Message msg = messages.peek();
+            Member sender = InformationController.getMember(msg.getUserId());
+            if (sender.getExpectedMessageId() == msg.getMessageId()) {
+                real_deliver(msg);
+                sender.setExpectedMessageId(sender.getExpectedMessageId() + 1);
+                LinkedList<Message> listToSort  = new LinkedList<>();
+                for (Message toCheck : isis_messages) {
+                    if (toCheck.getUserId() == msg.getUserId()) {
+                        listToSort.add(toCheck);
+                        if (!isis_messages.remove(toCheck))
+                            System.out.println("wtf remove failed from isis_messages");
                     }
                 }
+
+                Collections.sort(listToSort);
+
+                for (Message toDeliver: listToSort) {
+
+                    if (sender.getExpectedMessageId() == toDeliver.getMessageId()) {
+                        real_deliver(toDeliver);
+                        sender.setExpectedMessageId(sender.getExpectedMessageId() + 1);
+                    }
+                    else {
+                        isis_messages.add(toDeliver);
+                    }
+                }
+
             }
-            else{
-                System.out.print("in " + groupName + " " + sender.getUsername() + " says:: ");
-                System.out.println(messages.peek().getMessage());
+            else {
+                isis_messages.add(msg);
             }
+
             messages.remove();
+        }
+    }
+
+
+    public void real_deliver(Message m) {
+        Member sender = InformationController.getMember(m.getUserId());
+        String groupName = InformationController.getGroupName(m.getGroupId());
+
+        if(Client.isDebugMode()){
+            BufferedWriter out = null;
+            try
+            {
+                FileWriter fstream = new FileWriter(Client.getClientId()+"_"+groupName+".txt", true); //true tells to append data.
+                out = new BufferedWriter(fstream);
+                //out.write("in " + groupName + " " + sender.getUsername() + " says:: ");
+                out.write(m.getMessage()+"\n");
+            }
+            catch (IOException e)
+            {
+                System.err.println("Error: " + e.getMessage());
+            }
+            finally
+            {
+                if(out != null) {
+                    try{
+                        out.close();
+                    }
+                    catch (IOException e){
+                        System.err.println("Error: " + e.getMessage());
+                    }
+
+                }
+            }
+        }
+        else{
+            System.out.print("in " + groupName + " " + sender.getUsername() + " says:: ");
+            System.out.println(m.getMessage());
         }
     }
 }
