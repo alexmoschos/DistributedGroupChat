@@ -19,7 +19,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Tracker {
     private ServerSocket server;
     //ConcurrentHashMap<ClientInfo,ClientThread> aliveClients;
-    ArrayList<UserInfo> clients;
+    List<UserInfo> clients;
     List<Timer> heartbeat;
     List<Lock> timerLocks;
     Multimap<String,UserInfo> groups;
@@ -31,7 +31,7 @@ public class Tracker {
     public Tracker(int PortNumber){
         nextId.set(0);
         groups = Multimaps.synchronizedMultimap(ArrayListMultimap.create());
-        clients = new ArrayList<>();
+        clients = new CopyOnWriteArrayList<>();
         heartbeat = new CopyOnWriteArrayList<>();
         timerLocks = new CopyOnWriteArrayList<>();
         try {
