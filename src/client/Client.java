@@ -81,7 +81,7 @@ public class Client {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                Socket sock;
+                Socket sock = null;
                 ObjectOutputStream sOutput;
                 ObjectInputStream sInput;
                 int port = trackerPort;
@@ -127,6 +127,13 @@ public class Client {
                 }
                 catch (ClassNotFoundException e){
                     System.out.println(e);
+                } finally {
+                    try {
+                        sock.close();
+                    }
+                    catch (IOException ioE) {
+
+                    }
                 }
 
 
