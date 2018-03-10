@@ -67,17 +67,19 @@ kill -9 $tracker_pid
 kill -9 $controller_pid
 rm control_pipe client_*
 
-if [ "$PROTOCOL" == "fifo" ]
-then
-    for i in $(seq 1 $CLIENTS)
-    do
-        # test for fifo consistency
-        a=$(($i -1))
-        java FifoTester ${MSG_DIR}/messages*.txt < ${a}_distrib.txt
-    done
-else
+if [ ! "$PROTOCOL" == "fifo" ]; then
+    # first we check if messages have total order
     java TotalOrderTester *distrib*
 fi
+
+#then we check if messages have fifo order
+for i in $(seq 1 $CLIENTS)
+do
+    # test for fifo consistency
+    a=$(($i -1))
+    java FifoTester ${MSG_DIR}/messages*.txt < ${a}_distrib.txt
+done
+
 
 rm *distrib*
 
