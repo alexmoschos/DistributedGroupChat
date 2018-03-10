@@ -107,6 +107,14 @@ public class Client {
                                 g.addMember(m);
                                 InformationController.addMember(m);
                             }
+
+                            // remove dead message from isis_messages queue
+                            for (Message msg : g.isis_messages) {
+                                if (!msg.getStatus() && !z.users.contains(msg.getUserId())) {
+                                    // this is a dead message remove it from queue
+                                    g.isis_messages.remove(msg);
+                                }
+                            }
                             InformationController.addGroup(g);
                         } finally {
                             InformationController.getLock().unlock();
@@ -132,8 +140,10 @@ public class Client {
 
 
         while (true) {
+            String line = null;
             try {
-                String line = br.readLine();
+                line = br.readLine();
+                if (line.equals("")) continue;
                 if (line.charAt(0) == '!') {
                     String command = line.substring(1);
                     if (clientId == -1 && !command.equals("r")) {
@@ -154,6 +164,8 @@ public class Client {
                 System.out.println(e.toString());
             }
             catch (StringIndexOutOfBoundsException e){
+//                System.out.println("Exception in client: " + line);
+//                e.printStackTrace();
                 System.out.println(e);
             }
         }

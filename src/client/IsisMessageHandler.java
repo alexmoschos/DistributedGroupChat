@@ -1,5 +1,6 @@
 package  client;
 
+import javax.sound.sampled.Line;
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -21,6 +22,7 @@ public class IsisMessageHandler extends MessageHandler{
         long clientId = Client.getClientId();
         String groupId = Client.getCurrentGroupId();
         long messageId = getNextMessageId();
+        HashMap<String, Timer> promise_timers = null;
 
         Iterator<Member> recipient = null;
         int num_of_recipients = 0;
@@ -34,6 +36,7 @@ public class IsisMessageHandler extends MessageHandler{
         try {
             recipient = InformationController.getGroupMembers(Client.getCurrentGroupId());
             num_of_recipients = InformationController.getNumberOfMembersInGroup(Client.getCurrentGroupId());
+            promise_timers = InformationController.getGroup(groupId).promise_timers;
         } finally {
             InformationController.getLock().unlock();
         }
@@ -47,6 +50,43 @@ public class IsisMessageHandler extends MessageHandler{
             }
 
             Message msg = new Message(clientId, groupId, messageId, -1,Client.getClientId(), false, num_of_recipients, message);
+
+
+            // set promise timer
+            Timer t = new Timer();
+            t.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    Message reply = null;
+                    InformationController.getLock().lock();
+                    try {
+                        PriorityQueue<Message> pq  = InformationController.getGroup(msg.getGroupId()).messages;
+                        for (Message inQueueMessage: pq) {
+                            if (inQueueMessage.equals(msg)) {
+                                reply = inQueueMessage;
+                                break;
+                            }
+                        }
+                    } finally {
+                        InformationController.getLock().unlock();
+                    }
+
+
+
+                    ByteArrayOutputStream bStream = new ByteArrayOutputStream();
+                    try {
+                        ObjectOutput oo = new ObjectOutputStream(bStream);
+                        oo.writeObject(reply);
+                        oo.close();
+                    } catch (IOException ioE) {
+                        // nothing to do
+                    }
+                    byte[] serializedMessage = bStream.toByteArray();
+                    sendPacketToAll(msg.getGroupId(), serializedMessage);
+                }
+            }, 3000);
+
+            promise_timers.put(String.valueOf(msg.getUserId()) + "," + String.valueOf(msg.getMessageId()), t);
 
             ObjectOutput oo = new ObjectOutputStream(bStream);
             oo.writeObject(msg);
@@ -136,6 +176,12 @@ public class IsisMessageHandler extends MessageHandler{
                             long messageId = msg.getMessageId();
                             long suggestedPriority = init_message.getSuggestedPriority();
                             long userSuggested = init_message.getUserSuggest();
+
+
+                            // cancel promise timer
+                            HashMap<String, Timer> promise_timers = g.promise_timers;
+                            Timer t = promise_timers.get(String.valueOf(clientId) + "," + String.valueOf(messageId));
+                            t.cancel();
 
                             Message reply = new Message(clientId, groupId, messageId, suggestedPriority, userSuggested, false, 1, null);
 
@@ -246,6 +292,9 @@ public class IsisMessageHandler extends MessageHandler{
                 for (Message toDeliver: listToSort) {
 
                     if (sender.getExpectedMessageId() == toDeliver.getMessageId()) {
+                        Timer t = g.fifo_timers.get(String.valueOf(toDeliver.getUserId()) + "," + String.valueOf(toDeliver.getMessageId()));
+                        t.cancel();
+
                         real_deliver(toDeliver);
                         sender.setExpectedMessageId(sender.getExpectedMessageId() + 1);
                     }
@@ -256,7 +305,51 @@ public class IsisMessageHandler extends MessageHandler{
 
             }
             else {
-                isis_messages.add(msg);
+                if (msg.getMessageId() > sender.getExpectedMessageId()) {
+                    isis_messages.add(msg);
+                    Timer t = new Timer();
+                    t.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            InformationController.getLock().lock();
+                            try {
+                                Member sender = InformationController.getMember(msg.getUserId());
+                                sender.setExpectedMessageId(msg.getMessageId());
+                                if (sender.getExpectedMessageId() == msg.getMessageId()) {
+                                    real_deliver(msg);
+                                    sender.setExpectedMessageId(sender.getExpectedMessageId() + 1);
+                                    LinkedList<Message> listToSort = new LinkedList<>();
+                                    for (Message toCheck : isis_messages) {
+                                        if (toCheck.getUserId() == msg.getUserId()) {
+                                            listToSort.add(toCheck);
+                                            if (!isis_messages.remove(toCheck))
+                                                System.out.println("wtf remove failed from isis_messages");
+                                        }
+                                    }
+
+                                    Collections.sort(listToSort);
+
+                                    for (Message toDeliver : listToSort) {
+
+                                        if (sender.getExpectedMessageId() == toDeliver.getMessageId()) {
+                                            Timer t = g.fifo_timers.get(String.valueOf(toDeliver.getUserId()) + "," + String.valueOf(toDeliver.getMessageId()));
+                                            t.cancel();
+
+                                            real_deliver(toDeliver);
+                                            sender.setExpectedMessageId(sender.getExpectedMessageId() + 1);
+                                        } else {
+                                            isis_messages.add(toDeliver);
+                                        }
+                                    }
+
+                                }
+                            } finally {
+                                InformationController.getLock().unlock();
+                            }
+                        }
+                    }, 3000);
+                    g.fifo_timers.put(String.valueOf(msg.getUserId()) + "," + String.valueOf(msg.getMessageId()), t);
+                }
             }
 
             messages.remove();
