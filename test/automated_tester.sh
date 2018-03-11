@@ -11,7 +11,6 @@ MSG_DIR=$2
 PROTOCOL=$3
 CLIENTS=$4
 
-echo $CLIENTS
 
 # compilei input controller
 javac Controller.java
@@ -55,6 +54,12 @@ do
     cat ${MSG_DIR}/messages$i.txt > client_$i &
 done
 
+sleep 2
+# quit clients
+for i in $(seq 1 $CLIENTS)
+do
+    echo "$i !q" > control_pipe
+done
 
 echo "enter to stop"
 read nothing
@@ -71,7 +76,8 @@ rm control_pipe client_*
 
 for i in $(seq 1 $CLIENTS)
 do
-    tail -n 1 ${i}_distrib.txt >> throughputs.txt
+    a=$(($i -1))
+    tail -n 1 ${a}_distrib.txt >> throughputs.txt
 done
 
 
