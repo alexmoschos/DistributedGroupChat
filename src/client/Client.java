@@ -20,6 +20,7 @@ import java.util.TimerTask;
 public class Client {
     private static long clientId = -1L;
     private static String currentGroupId = "distrib";
+    private static String username;
     private static boolean debugMode = false;
 
     public static boolean isDebugMode() {
@@ -127,13 +128,6 @@ public class Client {
                 }
                 catch (ClassNotFoundException e){
                     System.out.println(e);
-                } finally {
-                    try {
-                        sock.close();
-                    }
-                    catch (IOException ioE) {
-
-                    }
                 }
 
 
@@ -166,7 +160,7 @@ public class Client {
                     }
                     mh.sendMessage(line);
                 }
-                System.out.print("[alexm]>");
+                System.out.print("[" + Client.username + "]>");
             } catch(IOException e) {
                 System.out.println(e.toString());
             }
@@ -215,5 +209,13 @@ public class Client {
         System.out.println("You are not registered yet!");
         System.out.println("In order to continue with the chat you need to register with the tracker first.");
         System.out.println("To register type !r");
+    }
+
+    public static String getUsername() {
+        return username;
+    }
+
+    public static void setUsername(String username) {
+        Client.username = username;
     }
 }

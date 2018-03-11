@@ -11,15 +11,18 @@ import java.util.Scanner;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Random;
 
 public class CommandHandler {
     private Socket sock;
     private ObjectOutputStream sOutput;
     private ObjectInputStream sInput;
+    private Random rand;
 
     private MessageHandler mh;
     public CommandHandler(MessageHandler mh) {
         this.mh = mh;
+        rand = new Random();
     }
 
     public static void main(String[] args) throws Throwable {
@@ -63,7 +66,8 @@ public class CommandHandler {
 
             if(command.equals("r")) { // register user to tracker.
                 this.beginConnection();
-                sOutput.writeObject(new ControlMessage(ControlMessage.Type.Register, mh.getLocalAddress().getHostAddress() +"," + String.valueOf(mh.getSocket().getLocalPort()) + ",alexm",-1));
+                Client.setUsername("client-" + String.valueOf(rand.nextInt(100)));
+                sOutput.writeObject(new ControlMessage(ControlMessage.Type.Register, mh.getLocalAddress().getHostAddress() +"," + String.valueOf(mh.getSocket().getLocalPort()) + "," + Client.getUsername() ,-1));
                 RegisterReply r = (RegisterReply) sInput.readObject();
                 sock.close();
                 System.out.println(r.id);
