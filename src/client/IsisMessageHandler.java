@@ -100,6 +100,7 @@ public class IsisMessageHandler extends MessageHandler{
 
                 DatagramPacket packet = new DatagramPacket(serializedMessage,
                         serializedMessage.length, m.getIp(), m.getPort());
+                Client.totalUdpPackets++;
                 socket.send(packet);
             }
 
@@ -123,6 +124,7 @@ public class IsisMessageHandler extends MessageHandler{
 
                 DatagramPacket packet = new DatagramPacket(serializedMessage,
                         serializedMessage.length, m.getIp(), m.getPort());
+                Client.totalUdpPackets++;
                 socket.send(packet);
             } catch (IOException e) {
                 // udp is not a trusted protocol. haha
@@ -225,6 +227,7 @@ public class IsisMessageHandler extends MessageHandler{
 
                 DatagramPacket packet = new DatagramPacket(serializedMessage,
                         serializedMessage.length, m.getIp(), m.getPort());
+                Client.totalUdpPackets++;
                 socket.send(packet);
 
 

@@ -77,8 +77,9 @@ rm control_pipe client_*
 for i in $(seq 1 $CLIENTS)
 do
     a=$(($i -1))
-    tail -n 2 ${a}_distrib.txt | head -n 1 >> throughputs.txt
-    tail -n 1 ${a}_distrib.txt >> latencies.txt
+    tail -n 3 ${a}_distrib.txt | head -n 1 >> throughputs.txt
+    tail -n 2 ${a}_distrib.txt | head -n 1 >> latencies.txt
+    tail -n 1 ${a}_distrib.txt >> messages.txt
 done
 
 

@@ -67,6 +67,7 @@ public class FifoMessageHandler extends MessageHandler {
                 
                 DatagramPacket packet = new DatagramPacket(serializedMessage,
                         serializedMessage.length, m.getIp(), m.getPort());
+                Client.totalUdpPackets++;
                 socket.send(packet);
             }
 

@@ -140,6 +140,7 @@ public class CommandHandler {
                         //out.write("in " + groupName + " " + sender.getUsername() + " says:: ");
                         out.write("Throughput " + String.valueOf(throughput) +"\n");
                         out.write("Latency " + String.valueOf(latency) + "\n");
+                        out.write("Protocol_Messages " + String.valueOf(Client.totalUdpPackets) + "\n");
 //                        out.write("Count " + String.valueOf(Client.count) + "\n");
 //                        out.write("TotalLatency " + String.valueOf(Client.totalLatency) + "\n");
                     }
@@ -163,6 +164,7 @@ public class CommandHandler {
                 else {
                     System.out.println("Throughput " + String.valueOf(throughput));
                     System.out.println("Latency " + String.valueOf(latency));
+                    System.out.println("Protocol_Messages " + String.valueOf(Client.totalUdpPackets));
 //                    System.out.println("Count " + String.valueOf(Client.count));
 //                    System.out.println("TotalLatency " + String.valueOf(Client.totalLatency));
                 }
