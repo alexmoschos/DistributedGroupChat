@@ -88,12 +88,14 @@ done
 # wait for 10 seconds for heartbeats to take place
 sleep 10
 
-# start sending messages
-for i in $(seq 1 $CLIENTS)
-do
-    # do this concurrently
-    cat ${MSG_DIR}/messages$i.txt > client_$i &
-done
+# # start sending messages
+# for i in $(seq 1 $CLIENTS)
+# do
+#     # do this concurrently
+#     cat ${MSG_DIR}/messages$i.txt > client_$i &
+# done
+
+cat ${MSG_DIR}/long_message.txt > client_1 &
 
 sleep 10
 
