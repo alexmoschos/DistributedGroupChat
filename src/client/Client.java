@@ -25,6 +25,7 @@ public class Client {
     private static String currentGroupId = "distrib";
     private static String username;
     private static boolean debugMode = false;
+    public static long totalLatency = 0;
 
     public static boolean isDebugMode() {
         return debugMode;

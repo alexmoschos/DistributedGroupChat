@@ -76,6 +76,7 @@ abstract public class MessageHandler implements Runnable{
             
                 try {
                     Message msg = (Message) iStream.readObject();
+                    msg.receiveTime = System.currentTimeMillis();
                     receiveMessage(msg);
 
                 } catch (ClassNotFoundException cnfe) {

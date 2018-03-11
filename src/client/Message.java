@@ -14,6 +14,7 @@ public class Message implements Serializable, Comparable<Message> {
     private boolean status;
     private String message;
     private long counter;
+    public Long receiveTime;
 
     public Message(long userId, String groupId, long messageId, long suggestedPriority, long userSuggest, boolean status, long counter, String message) {
         this.userId = userId;

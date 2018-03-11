@@ -130,6 +130,7 @@ public class CommandHandler {
 
                 // print measuremnt
                 Double throughput = Client.count * 1000.0 / (Client.endTime - Client.startTime);
+                Double latency = Client.totalLatency * 1.0 / Client.count;
                 if (Client.isDebugMode()) {
                     BufferedWriter out = null;
                     try
@@ -138,6 +139,9 @@ public class CommandHandler {
                         out = new BufferedWriter(fstream);
                         //out.write("in " + groupName + " " + sender.getUsername() + " says:: ");
                         out.write("Throughput " + String.valueOf(throughput) +"\n");
+                        out.write("Latency " + String.valueOf(latency) + "\n");
+//                        out.write("Count " + String.valueOf(Client.count) + "\n");
+//                        out.write("TotalLatency " + String.valueOf(Client.totalLatency) + "\n");
                     }
                     catch (IOException e)
                     {
@@ -158,6 +162,9 @@ public class CommandHandler {
                 }
                 else {
                     System.out.println("Throughput " + String.valueOf(throughput));
+                    System.out.println("Latency " + String.valueOf(latency));
+//                    System.out.println("Count " + String.valueOf(Client.count));
+//                    System.out.println("TotalLatency " + String.valueOf(Client.totalLatency));
                 }
 
                 System.exit(0);

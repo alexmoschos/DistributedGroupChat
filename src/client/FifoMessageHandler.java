@@ -143,6 +143,9 @@ public class FifoMessageHandler extends MessageHandler {
             Client.endTime = new Long(System.currentTimeMillis());
             Client.count++;
 
+            Long latency = System.currentTimeMillis() - m.receiveTime;
+            Client.totalLatency += latency;
+
             if(Client.isDebugMode()){
                 BufferedWriter out = null;
                 try
