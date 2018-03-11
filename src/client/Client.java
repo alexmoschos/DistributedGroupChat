@@ -18,6 +18,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class Client {
+    public static Long startTime = null;
+    public static Long endTime = null;
+    public static int count = 0;
     private static long clientId = -1L;
     private static String currentGroupId = "distrib";
     private static String username;
@@ -152,8 +155,7 @@ public class Client {
                         continue;
                     }
                     ch.execute(command);
-                }
-                else {
+                } else {
                     if (clientId == -1) {
                         clientNotRegistered();
                         continue;
@@ -161,15 +163,15 @@ public class Client {
                     mh.sendMessage(line);
                 }
                 System.out.print("[" + Client.username + "]>");
-            } catch(IOException e) {
+            } catch (IOException e) {
                 System.out.println(e.toString());
-            }
-            catch (StringIndexOutOfBoundsException e){
-//                System.out.println("Exception in client: " + line);
-//                e.printStackTrace();
+            } catch (StringIndexOutOfBoundsException e) {
+                //                System.out.println("Exception in client: " + line);
+                //                e.printStackTrace();
                 System.out.println(e);
             }
         }
+
 
         // int port = 3000;
         // String serverAddress = "localhost";

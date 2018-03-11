@@ -361,6 +361,11 @@ public class IsisMessageHandler extends MessageHandler{
         Member sender = InformationController.getMember(m.getUserId());
         String groupName = InformationController.getGroupName(m.getGroupId());
 
+        if (Client.startTime == null)
+            Client.startTime = new Long(System.currentTimeMillis());
+        Client.endTime = new Long(System.currentTimeMillis());
+        Client.count++;
+
         if(Client.isDebugMode()){
             BufferedWriter out = null;
             try

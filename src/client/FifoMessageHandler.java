@@ -137,6 +137,12 @@ public class FifoMessageHandler extends MessageHandler {
             }
 
             InformationController.cancelMessageTimer(m.getGroupId(), m);
+
+            if (Client.startTime == null)
+                Client.startTime = new Long(System.currentTimeMillis());
+            Client.endTime = new Long(System.currentTimeMillis());
+            Client.count++;
+
             if(Client.isDebugMode()){
                 BufferedWriter out = null;
                 try

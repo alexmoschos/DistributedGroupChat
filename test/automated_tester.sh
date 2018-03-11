@@ -11,6 +11,7 @@ MSG_DIR=$2
 PROTOCOL=$3
 CLIENTS=$4
 
+echo $CLIENTS
 
 # compilei input controller
 javac Controller.java
@@ -67,18 +68,26 @@ kill -9 $tracker_pid
 kill -9 $controller_pid
 rm control_pipe client_*
 
-if [ ! "$PROTOCOL" == "fifo" ]; then
-    # first we check if messages have total order
-    java TotalOrderTester *distrib*
-fi
 
-#then we check if messages have fifo order
 for i in $(seq 1 $CLIENTS)
 do
-    # test for fifo consistency
-    a=$(($i -1))
-    java FifoTester ${MSG_DIR}/messages*.txt < ${a}_distrib.txt
+    tail -n 1 ${i}_distrib.txt >> throughputs.txt
 done
+
+
+
+# if [ ! "$PROTOCOL" == "fifo" ]; then
+#     # first we check if messages have total order
+#     java TotalOrderTester *distrib*
+# fi
+
+# #then we check if messages have fifo order
+# for i in $(seq 1 $CLIENTS)
+# do
+#     # test for fifo consistency
+#     a=$(($i -1))
+#     java FifoTester ${MSG_DIR}/messages*.txt < ${a}_distrib.txt
+# done
 
 
 rm *distrib*

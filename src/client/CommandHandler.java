@@ -127,6 +127,39 @@ public class CommandHandler {
                 sOutput.writeObject(new ControlMessage(ControlMessage.Type.Quit,"", (int)Client.getClientId()));
                 ControlReply zz = (ControlReply) sInput.readObject();
                 sock.close();
+
+                // print measuremnt
+                Double throughput = Client.count * 1000.0 / (Client.endTime - Client.startTime);
+                if (Client.isDebugMode()) {
+                    BufferedWriter out = null;
+                    try
+                    {
+                        FileWriter fstream = new FileWriter(Client.getClientId()+"_"+Client.getCurrentGroupId()+".txt", true); //true tells to append data.
+                        out = new BufferedWriter(fstream);
+                        //out.write("in " + groupName + " " + sender.getUsername() + " says:: ");
+                        out.write("Throughput " + String.valueOf(throughput) +"\n");
+                    }
+                    catch (IOException e)
+                    {
+                        System.err.println("Error: " + e.getMessage());
+                    }
+                    finally
+                    {
+                        if(out != null) {
+                            try{
+                                out.close();
+                            }
+                            catch (IOException e){
+                                System.err.println("Error: " + e.getMessage());
+                            }
+
+                        }
+                    }
+                }
+                else {
+                    System.out.println("Throughput " + String.valueOf(throughput));
+                }
+
                 System.exit(0);
             }
             else if(command.charAt(0) == 'w') {
