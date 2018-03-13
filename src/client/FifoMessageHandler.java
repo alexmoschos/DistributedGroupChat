@@ -164,8 +164,9 @@ public class FifoMessageHandler extends MessageHandler {
                 }
             }
             else{
-                System.out.print("in " + groupName + " " + sender.getUsername() + " says:: ");
+                System.out.print("\rin " + groupName + " " + sender.getUsername() + " says:: ");
                 System.out.println(m.getMessage());
+                System.out.print("[" + Client.getUsername() + "]>");
             }
 
             //and increase the expectedMessageId
