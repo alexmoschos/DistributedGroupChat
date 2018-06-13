@@ -1,0 +1,4 @@
+#!/bin/sh
+
+cd out/production/DistributedGroupChat
+java -cp ".:lib/guava-19.0.jar" tracker.Tracker

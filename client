@@ -1,0 +1,4 @@
+#!/bin/sh
+
+cd out/production/DistributedGroupChat
+java client.Client debug=false tracker=127.0.0.1:3000 protocol=isis
